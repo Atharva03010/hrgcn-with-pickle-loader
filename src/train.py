@@ -12,9 +12,9 @@ from tqdm import tqdm
 import random
 import pickle
 
-from data_loader_origin import EventGraphDataset
 from data_loader import HetGCNEventGraphDataset
 from data_loader_cmu import CMUGraphDataset
+from data_loader_pickle import PickleEventGraphDataset
 
 import boto3
 
@@ -197,6 +197,12 @@ class Train(object):
             if self.dataset_id == 1:
                 self.dataset = CMUGraphDataset()
             self.loss = svdd_batch_loss
+        
+        elif self.dataset_id == 2:
+            from GCN_3 import HetGCN_3 as HetGCN
+            from GCN_3 import svdd_batch_loss
+            self.loss = svdd_batch_loss
+            self.dataset = PickleEventGraphDataset(pickle_file=kwargs["pickle_path"])
 
         else:
             from GCN import HetGCN
@@ -356,10 +362,13 @@ class Train(object):
                     )
             print("iteration " + str(iter_i) + " finish.")
 
-    def train_eval_test_split(self, test_set=True):
+        def train_eval_test_split(self, test_set=True):
         """
         splite data into train eval test
         """
+        if self.dataset_id == 2:
+            return self.train_eval_test_split_pickle()
+
         print("Random Split Train/Eval/Test.")
         trace_info_df = pd.read_csv(
             f"{self.data_root_dir}/trace_info.csv", index_col=None
@@ -392,7 +401,7 @@ class Train(object):
         eval_benign_gid_list = np.random.choice(
             left_benign_gid_list, num_eval_benign, replace=False
         )
-        test_benign_gid_list = left_benign_gid_list[
+        test_benign_gid_list = left_benign__gid_list[
             np.in1d(left_benign_gid_list, eval_benign_gid_list, invert=True)
         ]
 
@@ -433,6 +442,21 @@ class Train(object):
             fout.write("\n")
 
         return rep_train_benign_gid_list, eval_gid_list, test_gid_list
+
+    def train_eval_test_split_pickle(self):
+        print("Random Split Train/Eval/Test for Pickle Dataset.")
+        num_graphs = len(self.dataset)
+        gids = np.arange(num_graphs)
+        np.random.shuffle(gids)
+
+        num_train = int(num_graphs * 0.6)
+        num_eval = int(num_graphs * 0.2)
+
+        train_gid_list = gids[:num_train]
+        eval_gid_list = gids[num_train:num_train + num_eval]
+        test_gid_list = gids[num_train + num_eval:]
+
+        return train_gid_list, eval_gid_list, test_gid_list
 
     def read_train_eval_test_sets(self):
         """
@@ -477,7 +501,7 @@ class Train(object):
                 except Exception as e:
                     print(f"Failed to upload {local_path} to {s3_path}.\n{e}")
 
-    def eval_model(self, eval_list):
+        def eval_model(self, eval_list):
         """
         Eval Model
         """
@@ -490,9 +514,13 @@ class Train(object):
             eval_list_tmp = eval_list
 
         self.model.eval()
-        trace_info_df = pd.read_csv(
-            f"{self.data_root_dir}/trace_info.csv", index_col=None
-        )
+        if self.dataset_id == 2:
+            labels = [self.dataset[gid].y.item() for gid in eval_list_tmp]
+        else:
+            trace_info_df = pd.read_csv(
+                f"{self.data_root_dir}/trace_info.csv", index_col=None
+            )
+
         with torch.no_grad():
             if self.input_type == "single":
                 pred_scores = []
@@ -510,14 +538,15 @@ class Train(object):
                     self.model.predict_score(eval_list_tmp).cpu().detach().numpy()
                 )
 
-            labels = []
-            for gid in eval_list_tmp:
-                if trace_info_df[trace_info_df["trace_id"] == gid]["trace_bool"].values[
-                    0
-                ]:
-                    labels.append(0)
-                else:
-                    labels.append(1)
+            if self.dataset_id != 2:
+                labels = []
+                for gid in eval_list_tmp:
+                    if trace_info_df[trace_info_df["trace_id"] == gid]["trace_bool"].values[
+                        0
+                    ]:
+                        labels.append(0)
+                    else:
+                        labels.append(1)
             # label = trace_info_df[trace_info_df['trace_id'].isin(eval_list_tmp)]['trace_bool'] \
             #     .apply(lambda x: 0 if x else 1).values
 
@@ -535,3 +564,4 @@ class Train(object):
             print(f"\tAUC:{roc_auc}; Avg Precision:{ap};")
 
         return roc_auc, ap
+

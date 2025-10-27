@@ -1,10 +1,12 @@
 import os
 from pydoc import resolve
 import click
+import torch
+print(f'PyTorch version: {torch.__version__}')
 
 
 @click.command()
-@click.option("--lr", default=0.0001, help="learning rate")
+@click.option("--lr", default=0.001, help="learning rate")
 @click.option("--save_model_freq", default=2, help="data_path")
 @click.option("--model_path", default="../model_save_clean", help="model path dir")
 @click.option("--data_path", default="../ProcessedData_clean", help="data path dir")
@@ -187,11 +189,15 @@ import click
     default="application/anomaly_detection/deeptralog/HetGNN/model_save_clean/",
     help="S3 prefix to upload intermediate artifacts",
 )
+@click.option("--pickle_path", default=None, type=str, help="path to pickle file")
 def main(**args):
+    if args["pickle_path"]:
+        args["dataset_id"] = 2
+        args["split_data"] = True
     args = resolve_args(args)
     print(args)
     if args["trainer_version"] == 2:
-        from train_2 import Train2 as Train
+        from train_2 import Train as Train
     else:
         from train import Train
 
