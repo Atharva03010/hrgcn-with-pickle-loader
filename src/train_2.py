@@ -63,7 +63,6 @@ class Train(object):
         super().__init__()
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Device: {self.device}")
 
         self.data_root_dir = data_path
         self.model_path = model_path
@@ -116,8 +115,6 @@ class Train(object):
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(
             self.optim, milestones=[60, 120], gamma=0.1
         )
-
-        print(self.model)
 
         self.early_stopping = EarlyStopping(tolerance=tolerance)
 

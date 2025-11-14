@@ -2,7 +2,6 @@ import os
 from pydoc import resolve
 import click
 import torch
-print(f'PyTorch version: {torch.__version__}')
 
 
 @click.command()
@@ -19,7 +18,7 @@ print(f'PyTorch version: {torch.__version__}')
 )
 @click.option("--batch_s", default=2000, help="batch size")
 @click.option("--mini_batch_s", default=500, help="mini batch size")
-@click.option("--train_iter_n", default=100, help="max train iter")
+@click.option("--train_iter_n", default=500, help="max train iter")
 @click.option("--num_node_types", default=8, help="num of node types in data")
 @click.option("--num_edge_types", default=1, help="num of edge types in data")
 @click.option("--source_types", default=None, type=str, help="consider Source types")
@@ -29,7 +28,7 @@ print(f'PyTorch version: {torch.__version__}')
     type=str,
     help="the way of feeding model. i.e, single | batch",
 )
-@click.option("--hidden_channels", default=16, help="size of hidden channels")
+@click.option("--hidden_channels", default=32, help="size of hidden channels")
 @click.option("--feature_size", default=7, help="input node feature size")
 @click.option("--out_embed_s", default=32, help="output feature size")
 @click.option(
@@ -195,7 +194,6 @@ def main(**args):
         args["dataset_id"] = 2
         args["split_data"] = True
     args = resolve_args(args)
-    print(args)
     if args["trainer_version"] == 2:
         from train_2 import Train as Train
     else:
