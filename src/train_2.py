@@ -231,6 +231,16 @@ class Train(object):
                 # If no labels, just print the average distance
                 avg_dist = torch.mean(dist)
                 print(f"\tAverage distance from center: {avg_dist:.4f}")
+
+                node_indices = torch.arange(self.graph['user'].num_nodes)[mask]
+                scores = dist.cpu().numpy()
+                with open("src/anomaly_scores.csv", "w") as f:
+                    f.write("node_index,anomaly_score\n")
+                    for node_idx, score in zip(node_indices.cpu().numpy(), scores):
+                        f.write(f"{node_idx},{score}\n")
+
+                print("\tAnomaly scores saved to anomaly_scores.csv")
+                
                 return -avg_dist, 0.0
 
     def sync_model_path_to_s3(self, s3_bucket, s3_prefix):
