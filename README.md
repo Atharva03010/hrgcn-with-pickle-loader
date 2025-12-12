@@ -1,96 +1,25 @@
-# HRGCN
-Code Repository for Paper "HRGCN: Heterogeneous Graph-level Anomaly Detection with Hierarchical Relation-augmented Graph Neural Networks"
+# HRGCN (Modified)
 
-## Abstract
-> This work considers the problem of heterogeneous graph-level anomaly detection. Heterogeneous graphs are commonly used to represent behaviours between different types of entities in complex industrial systems for capturing as much information about the system operations as possible. Detecting anomalous heterogeneous graphs from a large set of system behaviour graphs is crucial for many real-world applications like online web/mobile service and cloud access control. To address the problem, we propose HRGCN, an unsupervised deep heterogeneous graph neural network, to model complex heterogeneous relations between different entities in the system for effectively identifying these anomalous behaviour graphs. HRGCN trains a hierarchical relation-augmented Heterogeneous Graph Neural Network (HetGNN), which learns better graph representations by modelling the interactions among all the system entities and considering both source-to-destination entity (node) types and their relation (edge) types. Extensive evaluation on two real-world application datasets shows that HRGCN outperforms state-of-the-art competing anomaly detection approaches. We further present a real-world industrial case study to justify the effectiveness of HRGCN in detecting anomalous (e.g., congested) network devices in a mobile communication service.
+This repository is a modified version of the [original HRGCN repository](https://github.com/jiaxililearn/HRGCN). It extends the original functionality by adding the ability to load data directly from pickle files.
 
-## Install
-Dependency Libs:
-- gcc>=7.2
-- cuda>=10.2
-- torch>=1.9.1
-- torch-geometric
+> **Note:** This code is configured to load a specific graph dataset structure and is **not** a general-purpose implementation of HRGCN.
 
-## Data
-Download datasets at
-- FlowGraph Dataset: https://drive.google.com/file/d/1vDuDe6c76cYz6x2yKaeO2gpsGc7b7yiw/view?usp=sharing
-- TraceLog Dataset: https://drive.google.com/file/d/1IH_GwrbMNl1gm8O6uuTR5qprhdhkISvz/view?usp=sharing
+## Features
+* **Pickle Support:** Load graph data via custom pickle files.
+* **Anomaly Detection:** Calculates anomaly scores for individual nodes.
+* **SVDD Integration:** Computes distances from the Support Vector Data Description (SVDD) center. Exclusively used unsupervised approach instead of the hybrid semi-supervised approach of the original implementation.
 
-Then, unzip the datasets and put them under `data/` or run the commands with the updated `--data_path` argument.
+## Usage
 
-## Train and Evaluate
-### Run the `FlowGraph` Dataset
-```shell
-# FlowGraph
-cd src/
-python main.py \
---num_node_types 8 \
---num_train 375 \
---source_types 0,1 \
---sampling_size 375 \
---batch_s 25 \
---mini_batch_s 25 \
---eval_size 375 \
---ignore_weight False \
---lr 0.01 \
---feature_size 26 \
---out_embed_s 32 \
---hidden_channels 32 \
---num_hidden_conv_layers 2 \
---edge_addition_pct 0.39185763245124894 \
---swap_node_pct 0.5266846615473234 \
---loss_weight 0.2129864286429184 \
---model_path ../model/model_save_streamspot \
---data_path ../data//ProcessedData_streamspot
+To run the script, use the following command:
+
+```bash
+python src/main.py --pickle_path /path/to/picklefile
 ```
 
-### Run the `TraceLog` Dataset
-```shell
-# TraceLog
-cd src/
-python main.py \
---num_node_types 8 \
---num_edge_types 4 \
---num_train 65000 \
---source_types 0,1,2,3,4,5,6,7 \
---sampling_size 160 \
---batch_s 32 \
---mini_batch_s 8 \
---eval_size 10 \
---lr 0.0001 \
---feature_size 7 \
---out_embed_s 300 \
---hidden_channels 300 \
---num_hidden_conv_layers 1 \
---edge_mutate_prob 0.8420627973829723 \
---edge_addition_pct 0.12868699273268602 \
---swap_node_pct 0.10941908541074977 \
---swap_edge_pct 0.17953551869297305 \
---loss_weight 0.0009732460622703387 \
---model_path ../model/model_save_tralog \
---data_path ../data//ProcessedData_HetGCN 
-```
+## Results
+Script writes anomaly scores of indiviual nodes to a csv file. The final average distance from SVDD center is printed after testing.
 
-## Abalation Study
-Use the `--ablation` flag to run with each abalation setup. I.e.,
-- no-edge-relation
-- no-node-relation
-- no-edge-node-relation
+## Requirements
+Same as the original implementation
 
-```shell
-python main.py \
-...
---ablation no-edge-relation \
-...
-```
-
-
-## Citation
-```bibtex
-@inproceedings{li2023hrgcn,
-  title={HRGCN: Heterogeneous Graph-level Anomaly Detection with Hierarchical Relation-augmented Graph Neural Networks},
-  author={Li, Jiaxi and Pang, Guansong and Chen, Ling and  Namazi-Rad, Mohammad-Reza},
-  booktitle={DSAA' 2023: 10th IEEE International Conference on Data Science and Advanced Analytics},
-  year={2023}
-}
-```
