@@ -62,6 +62,12 @@ class Train(object):
     ):
         super().__init__()
 
+        random.seed(kwargs["random_seed"])
+        np.random.seed(kwargs["random_seed"])
+        torch.manual_seed(kwargs["random_seed"])
+        torch.cuda.manual_seed(kwargs["random_seed"])
+        torch.cuda.manual_seed_all(kwargs["random_seed"])
+
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.data_root_dir = data_path

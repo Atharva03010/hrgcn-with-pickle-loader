@@ -163,3 +163,7 @@ HRGCN/
 src/Graph_Creation_Code/ 
 src/twitter_data/
 
+src/GRAPH_HASHTAG_MEDIUM.pickle
+src/GRAPH_HASHTAG_SMALL.pickle
+src/anomaly_scores.csv
+

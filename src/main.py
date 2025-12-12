@@ -46,7 +46,7 @@ import torch
     type=int,
     help="evaluation size for each epoch. default None to use all the rest eval dataset in each epoch",
 )
-@click.option("--random_seed", default=36, help="random seed")
+@click.option("--random_seed", default=983012, help="random seed")
 @click.option("--trainer_version", default=2, help="trainer version")
 @click.option("--model_version", default=11, help="train with model version")
 @click.option("--model_sub_version", default=0, help="train with sub model version")
